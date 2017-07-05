@@ -12,35 +12,50 @@ const Dragger = Upload.Dragger;
 const ProcessData = new Process();
 const dimList = ['Excitation', 'Emission'];
 
+function isEmptyObject(e) {  
+    var t;  
+    for (t in e)  
+        return !1;  
+    return !0  
+} 
+
 function parse(dim, file) {
-  Papa.parse(file, {
-    header: true,
-    dynamicTyping: true,
-    complete: (results) => {
-      let resultData = [];
-      for (let i = 0; i < 7; i++) {
-        resultData.push(ProcessData.dataProcess(dim, i, results));
+  if (!isEmptyObject(file)) {
+    Papa.parse(file, {
+      header: true,
+      dynamicTyping: true,
+      complete: (results) => {
+        let resultData = [];
+        for (let i = 0; i < 7; i++) {
+          resultData.push(ProcessData.dataProcess(dim, i, results));
+        }
+        resultData = ProcessData.dataReverse(resultData);
+        ProcessData.renderChart(dim, resultData);
+      },
+      error: () => {
+        message.error("Please upload .CSV!");
       }
-      resultData = ProcessData.dataReverse(resultData);
-      ProcessData.renderChart(dim, resultData);
-    }
-  });
+    });
+  } else {
+    message.error("Please upload FILE first!");
+  }
 }
 
 class SelectDim extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { select: '' }
+    this.state = { select: 'Excitation' }
     this.handleChange = this.handleChange.bind(this);
   }
   handleChange(value) {
     this.setState({ select: value });
-    this.props.onSelectChange( value);
+    this.props.onSelectChange(value);
   }
   render() {
     const Option = Select.Option;
     return <Select
       showSearch
+      value={this.state.select}
       style={{ width: '100%' }}
       placeholder="Select a person"
       optionFilterProp="children"
@@ -76,11 +91,6 @@ const colnames = ["DAPI", "AF488", "FITC", "Cy3", "TexasRed", "Cy5", "AF750", "A
   excitation = [[315, 415], [450, 490], [470, 490], [515, 545], [573.5, 586.5], [620, 640], [672.5, 747.5]],
   emission = [[420, 470], [500, 520], [500, 550], [556, 574], [597, 637], [652, 682], [765, 855]];
 
-
-
-function UploadInput2() {
-
-}
 class UploadInput extends React.Component {
   constructor(props) {
     super(props);
@@ -107,7 +117,7 @@ class UploadInput extends React.Component {
 class GridContent extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { file: {}, dim: '' }
+    this.state = { file: {}, dim: 'Excitation' }
     this.handleUpload = this.handleUpload.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
     this.onClick = this.onClick.bind(this);
@@ -124,16 +134,16 @@ class GridContent extends React.Component {
   render() {
     return (
       <div>
-      <Row gutter={3}>
-        <Col span={3}>
-          <div>
-          <Row style={{marginBottom:20}}><UploadInput onUploadChange={this.handleUpload} /></Row>
-          <Row style={{marginBottom:20}}><SelectDim onSelectChange={this.handleSelect} /></Row>
-          <Row style={{marginBottom:20}}><Button style={{ width: '100%' }} onClick={this.onClick} type="primary">解析文件</Button></Row>
-          </div>
-        </Col>
-        <Col span={21}><div id="container"></div></Col>
-      </Row>
+        <Row gutter={3}>
+          <Col span={3}>
+            <div>
+              <Row style={{ marginBottom: 20 }}><UploadInput onUploadChange={this.handleUpload} /></Row>
+              <Row style={{ marginBottom: 20 }}><SelectDim onSelectChange={this.handleSelect} /></Row>
+              <Row style={{ marginBottom: 20 }}><Button style={{ width: '100%' }} onClick={this.onClick} type="primary">Parse</Button></Row>
+            </div>
+          </Col>
+          <Col span={21}><div id="container"></div></Col>
+        </Row>
       </div>)
   }
 }
@@ -153,13 +163,12 @@ class App extends React.Component {
             defaultSelectedKeys={['2']}
             style={{ lineHeight: '64px' }}
           >
-            <Menu.Item key="1">报表</Menu.Item>
+            <Menu.Item key="1">Report</Menu.Item>
           </Menu>
         </Header>
         <Content style={{ padding: '0 50px' }}>
           <Breadcrumb style={{ margin: '12px 0' }}>
-            <Breadcrumb.Item>Home</Breadcrumb.Item>
-            <Breadcrumb.Item>报表</Breadcrumb.Item>
+            <Breadcrumb.Item>Report</Breadcrumb.Item>
           </Breadcrumb>
           <div style={{ background: '#fff', padding: 24, minHeight: 280 }}>
             <GridContent />
