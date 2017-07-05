@@ -10,36 +10,54 @@ const { Header, Content, Footer } = Layout;
 const Dragger = Upload.Dragger;
 
 const ProcessData = new Process();
-const dimList = ['Excitation','Emission'];
+const dimList = ['Excitation', 'Emission'];
 
-function parse(results) {
-  let resultData = [];
-  for (let i = 0; i < 7; i++) {
-    resultData.push(ProcessData.dataProcess('Emission', i, results));
+function parse(dim, file) {
+  Papa.parse(file, {
+    header: true,
+    dynamicTyping: true,
+    complete: (results) => {
+      let resultData = [];
+      for (let i = 0; i < 7; i++) {
+        resultData.push(ProcessData.dataProcess(dim, i, results));
+      }
+      resultData = ProcessData.dataReverse(resultData);
+      ProcessData.renderChart(dim, resultData);
+    }
+  });
+}
+
+class SelectDim extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { select: '' }
+    this.handleChange = this.handleChange.bind(this);
   }
-  resultData = ProcessData.dataReverse(resultData);
-  ProcessData.renderChart('Emission', resultData);
-}
-
-function handleChange(value) {
-  console.log(`selected ${value}`);
-}
-
-
+  handleChange(value) {
+    this.setState({ select: value });
+    this.props.onSelectChange( value);
+  }
+  render() {
+    const Option = Select.Option;
+    return <Select
+      showSearch
+      style={{ width: '100%' }}
+      placeholder="Select a person"
+      optionFilterProp="children"
+      onChange={this.handleChange}
+      filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+    >
+      <Option value="Excitation">Excitation</Option>
+      <Option value="Emission">Emission</Option>
+    </Select>
+  }
+};
 
 const props = {
   name: 'file',
   multiple: false,
   showUploadList: false,
   action: 'http://localhost:8080',
-  beforeUpload(file) {
-    Papa.parse(file, {
-      header: true,
-      dynamicTyping: true,
-      complete: parse
-    });
-    return false;
-  },
   onChange(info) {
     const status = info.file.status;
     if (status !== 'uploading') {
@@ -60,24 +78,64 @@ const colnames = ["DAPI", "AF488", "FITC", "Cy3", "TexasRed", "Cy5", "AF750", "A
 
 
 
-function UploadInput() {
-  const propsList = props;
-  return <div style={{ marginTop: 16, height: 180 }}>
-    <Dragger className="input-csv" {...propsList}>
-      <p className="ant-upload-drag-icon">
-        <Icon type="inbox" />
-      </p>
-      <p className="ant-upload-text">Click or drag file to this area to upload</p>
-      <p className="ant-upload-hint"></p>
-    </Dragger>
-  </div>
+function UploadInput2() {
+
 }
-function GridContent() {
-  return (
-    <Row>
-      <Col span={3}><UploadInput /></Col>
-      <Col span={21}><div id="container"></div></Col>
-    </Row>)
+class UploadInput extends React.Component {
+  constructor(props) {
+    super(props);
+    this.beforeUpload = this.beforeUpload.bind(this);
+  }
+  beforeUpload(file) {
+    this.props.onUploadChange(file);
+    return false;
+  }
+  render() {
+    const propsList = props;
+    return <div style={{ marginTop: 16, height: 180 }}>
+      <Dragger className="input-csv" {...propsList} beforeUpload={this.beforeUpload}>
+        <p className="ant-upload-drag-icon">
+          <Icon type="inbox" />
+        </p>
+        <p className="ant-upload-text">Click or drag file to this area to upload</p>
+        <p className="ant-upload-hint"></p>
+      </Dragger>
+    </div>
+  }
+}
+
+class GridContent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { file: {}, dim: '' }
+    this.handleUpload = this.handleUpload.bind(this);
+    this.handleSelect = this.handleSelect.bind(this);
+    this.onClick = this.onClick.bind(this);
+  }
+  handleUpload(file) {
+    this.setState({ file: file });
+  }
+  handleSelect(dim) {
+    this.setState({ dim: dim });
+  }
+  onClick() {
+    parse(this.state.dim, this.state.file);
+  }
+  render() {
+    return (
+      <div>
+      <Row gutter={3}>
+        <Col span={3}>
+          <div>
+          <Row style={{marginBottom:20}}><UploadInput onUploadChange={this.handleUpload} /></Row>
+          <Row style={{marginBottom:20}}><SelectDim onSelectChange={this.handleSelect} /></Row>
+          <Row style={{marginBottom:20}}><Button style={{ width: '100%' }} onClick={this.onClick} type="primary">解析文件</Button></Row>
+          </div>
+        </Col>
+        <Col span={21}><div id="container"></div></Col>
+      </Row>
+      </div>)
+  }
 }
 
 class App extends React.Component {
