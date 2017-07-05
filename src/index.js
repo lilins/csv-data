@@ -175,7 +175,7 @@ class App extends React.Component {
           </div>
         </Content>
         <Footer style={{ textAlign: 'center' }}>
-          CSV-DATA展示 ©2017 Created by LE
+          CSV-DATA ©2017 Created by LE
     </Footer>
       </Layout>
     );
