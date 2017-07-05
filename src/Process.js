@@ -17,7 +17,7 @@ class Process {
                 type: 'column'
             },
             title: {
-                text: '某实验结果'
+                text: 'The results'
             },
             xAxis: {
                 categories: rownames
