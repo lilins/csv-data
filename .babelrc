@@ -4,9 +4,7 @@
       "react"
   ],
   "plugins": [
-      ["import", 
-        { "libraryName": "transform-react-jsx" },
-        { "libraryName": "antd", "style": true}
-      ]
+      "transform-react-jsx",
+      ["import", { "libraryName": "antd", "style": "css" }]
   ]
 }

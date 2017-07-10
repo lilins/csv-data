@@ -11,8 +11,6 @@ module.exports = {
   output: {
     filename: 'bundle_[name].js',
     path: path.resolve(__dirname, 'dist')
-    // libraryTarget: 'var',
-    // library: 'XLSX'
   },
   module: {
     rules: [
@@ -23,6 +21,7 @@ module.exports = {
           loader: 'babel-loader'
         }
       },
+      // { test: /\.less$/,loader: 'style!css!less' },
       {
         test: /\.css$/,
         // exclude: /node_modules/,
