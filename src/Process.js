@@ -62,7 +62,7 @@ class Process {
             series: data
         });
     }
-    dataProcess(dimType, dim, results) {
+    dataProcess(dimType, dim, results, range) {
         let sumTotal = 0,
             sumRange = 0,
             typeTemp = 0,
@@ -78,7 +78,7 @@ class Process {
                 }
                 typeTemp = item.Type;
             }
-            if (dimList[dimType][dim][0] <= item.Wavelength && dimList[dimType][dim][1] >= item.Wavelength) {
+            if (range[dim][0] <= item.Wavelength && range[dim][1] >= item.Wavelength) {
                 sumRange += item[dimType];
             }
             sumTotal += item[dimType];
